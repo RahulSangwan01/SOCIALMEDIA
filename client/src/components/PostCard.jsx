@@ -338,7 +338,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
                     }}
                     >
                       {comment?.likes?.includes(user?._id) ? (
-                        <BiSolidLike size={20} color='blue' />
+                        <BiSolidLike size={20} color='yellow' />
                       ) : (
                         <BiLike size={20} />
                       )}

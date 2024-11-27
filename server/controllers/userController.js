@@ -426,8 +426,6 @@ export const suggestedFriends = async (req, res) => {
   }
 };
 
-
-
 // profile view 
 export const profileViews = async (req, res, next) => {
   try {
@@ -453,9 +451,6 @@ export const profileViews = async (req, res, next) => {
     });
   }
 };
-
-
-
 
 // Delete User
 export const deleteUser = async (req, res) => {
