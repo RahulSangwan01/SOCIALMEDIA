@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
 import bodyParser from "body-parser";
-
 import path from "path";
 
 //securty packges
@@ -34,8 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(router);
 
-// //error middleware
-
+//error middleware
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
