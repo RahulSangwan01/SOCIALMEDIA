@@ -19,7 +19,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, "views/build")));
 
-const PORT = process.env.PORT || 8800;
+const PORT = process.env.SERVER_PORT || process.env.PORT || 8800;
 
 dbConnection();
 
