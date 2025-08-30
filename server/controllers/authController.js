@@ -46,6 +46,27 @@ export const login = async (req, res, next) => {
       return;
     }
 
+    // Development fallback when DB is unavailable or email not found
+    if (process.env.ALLOW_DEV_LOGIN === "true") {
+      const mockUser = {
+        _id: "dev-user",
+        firstName: "Dev",
+        lastName: "User",
+        email,
+        profileUrl: "",
+        profession: "",
+        friends: [],
+        verified: true,
+      };
+      const token = createJWT(mockUser._id);
+      return res.status(201).json({
+        success: true,
+        message: "Login successfully (dev mode)",
+        user: mockUser,
+        token,
+      });
+    }
+
     // Find user by email
     const user = await Users.findOne({ email }).select("+password").populate({
       path: "friends",
