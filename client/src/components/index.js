@@ -1,19 +1,9 @@
-import TextInput from "./TextInput";
-import Loading from "./Loading";
-import CustomButton from "./CustomButton";
-import TopBar from "./TopBar";
-import ProfileCard from "./ProfileCard";
-import FriendsCard from "./FriendsCard";
-import PostCard from "./PostCard";
-import EditProfile from "./EditProfile";
-
-export {
-  Loading,
-  TextInput,
-  CustomButton,
-  TopBar,
-  ProfileCard,
-  FriendsCard,
-  PostCard,
-  EditProfile,
-};
+export { default as Loading } from "./Loading";
+export { default as TextInput } from "./TextInput";
+export { default as CustomButton } from "./CustomButton";
+export { default as TopBar } from "./TopBar";
+export { default as ProfileCard } from "./ProfileCard";
+export { default as FriendsCard } from "./FriendsCard";
+export { default as PostCard } from "./PostCard";
+export { default as EditProfile } from "./EditProfile";
+export { default as ChatPanel } from "./ChatPanel";

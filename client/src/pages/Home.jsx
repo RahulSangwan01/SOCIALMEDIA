@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  CustomButton, 
+  CustomButton,
   EditProfile,
   FriendsCard,
   Loading,
@@ -9,6 +9,7 @@ import {
   ProfileCard,
   TextInput,
   TopBar,
+  ChatPanel,
 } from "../components";
 import { Link } from "react-router-dom";
 import { NoProfile } from "../assets";
@@ -28,6 +29,7 @@ const Home = () => {
   const [file, setFile] = useState(null);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const dispatch = useDispatch();
 
   const {
@@ -378,10 +380,27 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </div>
           </div>
         </div>
+        </div>
       </div>
+
+      {/* Floating Chat Button */}
+      <button
+        aria-label="Open chat"
+        onClick={() => setShowChat((s) => !s)}
+        className="fixed bottom-6 right-6 z-40 p-4 bg-[#FFEA00] rounded-full shadow-xl text-white"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+          <path d="M2.25 12c0-4.556 4.107-8.25 9.172-8.25 5.066 0 9.178 3.694 9.178 8.25s-4.112 8.25-9.178 8.25c-1.04 0-2.04-.155-2.975-.44-.431-.131-.892.006-1.193.318l-1.46 1.512a.75.75 0 0 1-1.29-.53v-2.049c0-.35-.18-.677-.472-.884C3.49 16.73 2.25 14.5 2.25 12z" />
+        </svg>
+      </button>
+
+      {showChat && (
+        <div className="fixed bottom-24 right-6 z-40">
+          <ChatPanel user={user} friends={user?.friends || []} onClose={() => setShowChat(false)} />
+        </div>
+      )}
 
       {edit && <EditProfile />}
     </>
@@ -389,4 +408,3 @@ const Home = () => {
 };
 
 export default Home;
-
