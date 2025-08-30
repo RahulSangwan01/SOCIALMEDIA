@@ -6,3 +6,4 @@ export { default as ProfileCard } from "./ProfileCard";
 export { default as FriendsCard } from "./FriendsCard";
 export { default as PostCard } from "./PostCard";
 export { default as EditProfile } from "./EditProfile";
+export { default as ChatPanel } from "./ChatPanel";
