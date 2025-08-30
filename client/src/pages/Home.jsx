@@ -29,6 +29,7 @@ const Home = () => {
   const [file, setFile] = useState(null);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const dispatch = useDispatch();
 
   const {
