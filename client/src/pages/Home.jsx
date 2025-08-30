@@ -380,9 +380,6 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-
-            {/* CHAT */}
-            <ChatPanel user={user} />
           </div>
         </div>
         </div>
