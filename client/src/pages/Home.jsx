@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  CustomButton, 
+  CustomButton,
   EditProfile,
   FriendsCard,
   Loading,
@@ -9,6 +9,7 @@ import {
   ProfileCard,
   TextInput,
   TopBar,
+  ChatPanel,
 } from "../components";
 import { Link } from "react-router-dom";
 import { NoProfile } from "../assets";
@@ -378,8 +379,11 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            </div>
+
+            {/* CHAT */}
+            <ChatPanel user={user} />
           </div>
+        </div>
         </div>
       </div>
 
@@ -389,4 +393,3 @@ const Home = () => {
 };
 
 export default Home;
-
