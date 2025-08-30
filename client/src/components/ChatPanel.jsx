@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import CustomButton from "./CustomButton";
 
-const ChatPanel = ({ user }) => {
+const ChatPanel = ({ user, onClose, containerClass = "" }) => {
   const [messages, setMessages] = useState([
     { id: 1, sender: "System", text: "Start chatting with your friends!" },
   ]);
@@ -29,9 +29,10 @@ const ChatPanel = ({ user }) => {
   };
 
   return (
-    <div className="w-full bg-primary shadow-sm rounded-lg px-5 py-5">
+    <div className={`bg-primary shadow-xl rounded-lg px-5 py-4 w-[22rem] max-w-[90vw] ${containerClass}`}>
       <div className="flex items-center justify-between text-lg text-ascent-1 border-b border-[#66666645] pb-2">
         <span>Chat</span>
+        <button onClick={onClose} className="text-ascent-2 hover:text-ascent-1 text-sm">Close</button>
       </div>
 
       <div ref={listRef} className="mt-4 h-64 overflow-y-auto flex flex-col gap-2 pr-1">
