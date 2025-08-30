@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import CustomButton from "./CustomButton";
 import { NoProfile } from "../assets";
+import { io } from "socket.io-client";
 
 const getKey = (me, friendId) => `chat_${me || "me"}_${friendId || "none"}`;
 
@@ -8,15 +9,21 @@ const ChatPanel = ({ user, friends = [], onClose, containerClass = "" }) => {
   const [selected, setSelected] = useState(() => friends?.[0]?._id || null);
   const [text, setText] = useState("");
   const listRef = useRef(null);
+  const socketRef = useRef(null);
+  const [messages, setMessages] = useState([]);
 
-  const messages = useMemo(() => {
-    if (!selected) return [{ id: 0, sender: "System", text: "Select a friend to start chatting." }];
+  useEffect(() => {
+    // load current thread from storage when friend changes
     try {
-      const raw = localStorage.getItem(getKey(user?._id, selected));
-      const parsed = raw ? JSON.parse(raw) : [{ id: 1, sender: "System", text: "Say hi 👋" }];
-      return Array.isArray(parsed) ? parsed : [];
+      if (!selected) {
+        setMessages([{ id: 0, sender: "System", text: "Select a friend to start chatting." }]);
+      } else {
+        const raw = localStorage.getItem(getKey(user?._id, selected));
+        const parsed = raw ? JSON.parse(raw) : [{ id: 1, sender: "System", text: "Say hi 👋" }];
+        setMessages(Array.isArray(parsed) ? parsed : []);
+      }
     } catch {
-      return [];
+      setMessages([]);
     }
   }, [selected, user?._id]);
 
@@ -31,16 +38,49 @@ const ChatPanel = ({ user, friends = [], onClose, containerClass = "" }) => {
     localStorage.setItem(getKey(user?._id, selected), JSON.stringify(next.slice(-200)));
   };
 
+  useEffect(() => {
+    // establish socket connection
+    if (!user?.token) return;
+    const s = io("", { auth: { token: user.token } });
+    socketRef.current = s;
+
+    s.on("private_message", (payload) => {
+      const { from, to, text, ts } = payload || {};
+      if (!selected) return;
+      // only show messages for the active friend thread
+      if (from === selected || to === selected) {
+        setMessages((prev) => {
+          const next = [...prev, { id: ts || Date.now(), sender: from === user?._id ? "You" : "Friend", text }];
+          persist(next);
+          return next;
+        });
+      }
+    });
+
+    return () => {
+      try { s.disconnect(); } catch {}
+      socketRef.current = null;
+    };
+  }, [user?.token, selected, user?._id]);
+
   const sendMessage = (e) => {
     e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed || !selected) return;
 
-    const nextMsg = { id: Date.now(), sender: "You", text: trimmed };
+    // optimistic update
+    const now = Date.now();
+    const nextMsg = { id: now, sender: "You", text: trimmed };
     const next = [...messages, nextMsg];
+    setMessages(next);
     persist(next);
     setText("");
-    // force scroll via ref effect
+
+    // emit to server
+    try {
+      socketRef.current?.emit("private_message", { to: selected, text: trimmed });
+    } catch {}
+
     setTimeout(() => {
       if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
     }, 0);
