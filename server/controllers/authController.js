@@ -78,7 +78,7 @@ export const login = async (req, res, next) => {
       return;
     }
 
-    if (!user.verified) {
+    if (!user.verified && process.env.SKIP_EMAIL_VERIFICATION !== "true") {
       next(
         "User email is not verified. Check your email account and verify your email"
       );
