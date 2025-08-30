@@ -398,7 +398,7 @@ const Home = () => {
 
       {showChat && (
         <div className="fixed bottom-24 right-6 z-40">
-          <ChatPanel user={user} onClose={() => setShowChat(false)} />
+          <ChatPanel user={user} friends={user?.friends || []} onClose={() => setShowChat(false)} />
         </div>
       )}
 
