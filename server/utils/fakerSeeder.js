@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 import { generateFakeUsers, generateFriendRequests } from './fakerData.js';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config(); // Load environment variables
+dotenv.config({ path: path.resolve('../.env') }); // Load environment variables
 
 mongoose.connect(process.env.MONGODB_URL)
   .then(async () => {
