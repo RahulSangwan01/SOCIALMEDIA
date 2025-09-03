@@ -24,19 +24,24 @@ const PORT = process.env.PORT || 8800;
 dbConnection();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || "*", // use exact Vercel URL in prod
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(morgan("dev"));
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 app.use(router);
 
 //error middleware
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
-  // console.log(`Server running on port: ${PORT}`);
-  console.log("Server running on port: "   +   `${PORT}`);
+  console.log(`Server running on port: ${PORT}`);
 });
