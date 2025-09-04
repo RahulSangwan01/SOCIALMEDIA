@@ -8,7 +8,8 @@ import {
   ProfileCard,
   TopBar,
 } from "../components";
-import { deletePost, fetchPosts, getUserInfo, likePost } from "../utils";
+import MobileSidebar from "../components/MobileSidebar";
+import { deletePost, fetchPosts, getUserInfo, likePost, apiRequest, sendFriendRequest } from "../utils";
 
 
 const Profile = () => {
@@ -18,6 +19,9 @@ const Profile = () => {
   const { posts } = useSelector((state) => state.posts);
   const [userInfo, setUserInfo] = useState(user);
   const [loading, setLoading] = useState(false);
+  const [friendRequest, setFriendRequest] = useState([]);
+  const [suggestedFriends, setSuggestedFriends] = useState([]);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
 
   const uri = "/posts/get-user-post/"+id;
 
@@ -41,16 +45,46 @@ const Profile = () => {
     await getPosts();
   };
 
+  const fetchFriendRequests = async() => {
+    try{
+      const res = await apiRequest({ url: "/users/get-friend-request", token: user?.token, method: "POST" });
+      setFriendRequest(res?.data);
+    } catch(e){ console.log(e); }
+  };
+
+  const fetchSuggestedFriends = async() => {
+    try{
+      const res = await apiRequest({ url: "/users/suggested-friends", token: user?.token, method: "POST" });
+      setSuggestedFriends(res?.suggestedFriends);
+    } catch(e){ console.log(e); }
+  };
+
+  const acceptFriendRequest = async(id, status) => {
+    try{
+      const res = await apiRequest({ url: "/users/accept-request", token: user?.token, method: "POST", data: { rid: id, status } });
+      setFriendRequest(res?.data);
+    } catch(e){ console.log(e); }
+  };
+
+  const handleFriendRequest = async(id) => {
+    try{
+      await sendFriendRequest(user.token, id);
+      await fetchFriendRequests();
+    } catch(e){ console.log(e); }
+  };
+
     useEffect(() => {
       setLoading(true);
       getUser();
       getPosts();
+      fetchFriendRequests();
+      fetchSuggestedFriends();
     },[id]);
 
   return (
     <>
       <div className='home w-full px-0 lg:px-10 pb-20 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden'>
-        <TopBar />
+        <TopBar onOpenMobilePanel={() => setShowMobilePanel(true)} />
         <div className='w-full flex gap-2 lg:gap-4 md:pl-4 pt-5 pb-10 h-full'>
           {/* LEFT */}
           <div className='hidden w-1/3 lg:w-1/4 md:flex flex-col gap-6 overflow-y-auto'>
@@ -88,6 +122,16 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      <MobileSidebar
+        open={showMobilePanel}
+        onClose={() => setShowMobilePanel(false)}
+        user={userInfo}
+        friendRequest={friendRequest}
+        suggestedFriends={suggestedFriends}
+        onAcceptRequest={acceptFriendRequest}
+        onSendRequest={handleFriendRequest}
+      />
     </>
   );
 };
