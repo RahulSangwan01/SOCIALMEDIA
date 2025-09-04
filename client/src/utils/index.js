@@ -4,9 +4,10 @@ import { SetPosts } from "../redux/postSlice";
 
 const getBaseURL = () => {
   const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.replace(/\/$/, ""); // prefer explicit API URL in all environments
   const isLocal = typeof window !== "undefined" && window.location.hostname === "localhost";
-  if (isLocal && envUrl) return envUrl;
-  return ""; // same-origin; CRA dev proxy forwards to backend
+  // In local dev rely on CRA proxy; in prod require REACT_APP_API_URL
+  return isLocal ? "" : "";
 };
 
 export const API = axios.create({
@@ -26,9 +27,10 @@ export const apiRequest = async ({ url, token, data, method }) => {
     });
     return result?.data;
   } catch (error) {
-    const err = error.response.data;
+    const errData = error?.response?.data;
     console.log(error);
-    return { status: err.success, message: err.message };
+    if (errData) return { status: errData.success ?? false, message: errData.message ?? "Request failed" };
+    return { status: false, message: error?.message || "Network error" };
   }
 };
 
