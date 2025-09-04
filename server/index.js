@@ -25,9 +25,11 @@ dbConnection();
 
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL || "*", // use exact Vercel URL in prod
+  origin: [process.env.CLIENT_URL, "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: "10mb" }));
