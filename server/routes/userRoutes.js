@@ -76,6 +76,7 @@ import {
   suggestedFriends,
   updateUser,
   verifyEmail,
+  searchUsers,
 } from "../controllers/userController.js";
 import userAuth from "../middleware/authMiddleware.js";
 import { deleteUser } from "../controllers/userController.js";
@@ -119,6 +120,9 @@ router.post("/accept-request", userAuth, acceptRequest);  // Accept or deny a fr
 
 // Suggested Friends
 router.post("/suggested-friends", userAuth, suggestedFriends);  // Get suggested friends
+
+// Search Users
+router.post("/search-users", userAuth, searchUsers);
 
 // Add the delete user route
 router.delete("/delete-user", userAuth, deleteUser);  // Add the delete user route

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ProfileCard, FriendsCard, CustomButton } from "./index";
 import { NoProfile } from "../assets";
+import { searchUsers } from "../utils";
 
 const tabs = [
   { key: "profile", label: "Profile" },
@@ -19,6 +20,20 @@ const MobileSidebar = ({
   onSendRequest = () => {},
 }) => {
   const [active, setActive] = useState("profile");
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [sentIds, setSentIds] = useState([]);
+
+  const doSearch = async (value) => {
+    setQ(value);
+    if (!value || value.trim().length < 2) { setResults([]); return; }
+    try{
+      setSearching(true);
+      const users = await searchUsers(user?.token, value.trim());
+      setResults(users || []);
+    } finally { setSearching(false); }
+  };
 
   return (
     <div className={`${open ? "fixed" : "hidden"} inset-0 z-50 md:hidden`}>
@@ -57,20 +72,67 @@ const MobileSidebar = ({
                 <span>Friend Requests</span>
                 <span>{friendRequest?.length || 0}</span>
               </div>
+
+              <div className="mt-3">
+                <div className="flex gap-2">
+                  <input
+                    value={q}
+                    onChange={(e)=>doSearch(e.target.value)}
+                    placeholder="Search people..."
+                    className="flex-1 bg-secondary text-ascent-1 rounded-full px-4 py-2 text-sm outline-none"
+                  />
+                  <button className="px-4 py-2 rounded-full bg-[#FFEA00] text-white text-sm" onClick={()=>doSearch(q)}>
+                    Search
+                  </button>
+                </div>
+                {q && (
+                  <div className="mt-3 bg-primary border border-[#66666645] rounded-lg shadow-lg max-h-56 overflow-y-auto divide-y divide-[#66666645]">
+                    {searching ? (
+                      <p className="px-3 py-2 text-xs text-ascent-2">Searching...</p>
+                    ) : results?.length ? (
+                      results.filter(Boolean).map((u, idx)=> (
+                        <div key={u?._id || idx} className="px-3 py-2 flex items-center gap-3">
+                          <Link to={`/profile/${u?._id || ""}`} className="flex-1 flex items-center gap-3 min-w-0">
+                            <img src={u?.profileUrl ?? NoProfile} alt={u?.firstName} className="w-9 h-9 object-cover rounded-full flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-ascent-1 truncate">{u?.firstName} {u?.lastName}</p>
+                              <span className="text-xs text-ascent-2 truncate block">{u?.profession ?? "No Profession"}</span>
+                            </div>
+                          </Link>
+                          {sentIds.includes(u?._id) ? (
+                            <span className="text-xs text-ascent-2">Sent</span>
+                          ) : (
+                            <button
+                              disabled={!u?._id}
+                              className="bg-[#FFEA00] text-xs text-white px-2 py-1 rounded flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                              onClick={async () => { if (!u?._id) return; await onSendRequest(u._id); setSentIds((ids)=> ids.includes(u._id) ? ids : [...ids, u._id]); }}
+                            >
+                              Add
+                            </button>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="px-3 py-2 text-xs text-ascent-2">No users found</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="w-full flex flex-col gap-4 pt-4">
                 {friendRequest?.length ? (
-                  friendRequest.map(({ _id, requestFrom: from }) => (
-                    <div key={_id} className="flex items-center justify-between">
-                      <Link to={`/profile/${from?._id}`} className="w-full flex gap-3 items-center">
-                        <img src={from?.profileUrl ?? NoProfile} alt={from?.firstName} className="w-10 h-10 object-cover rounded-full" />
+                  friendRequest.filter(Boolean).map((req, idx) => (
+                    <div key={req?._id || idx} className="flex items-center justify-between">
+                      <Link to={`/profile/${req?.requestFrom?._id || ""}`} className="w-full flex gap-3 items-center">
+                        <img src={req?.requestFrom?.profileUrl ?? NoProfile} alt={req?.requestFrom?.firstName} className="w-10 h-10 object-cover rounded-full" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-ascent-1">{from?.firstName} {from?.lastName}</p>
-                          <span className="text-xs text-ascent-2">{from?.profession ?? "No Profession"}</span>
+                          <p className="text-sm font-medium text-ascent-1">{req?.requestFrom?.firstName} {req?.requestFrom?.lastName}</p>
+                          <span className="text-xs text-ascent-2">{req?.requestFrom?.profession ?? "No Profession"}</span>
                         </div>
                       </Link>
                       <div className="flex gap-1">
-                        <CustomButton title="Accept" onClick={() => onAcceptRequest(_id, "Accepted")} containerStyles="bg-[#FFEA00] text-xs text-white px-1.5 py-1 rounded-full" />
-                        <CustomButton title="Deny" onClick={() => onAcceptRequest(_id, "Denied")} containerStyles="border border-[#666] text-xs text-ascent-1 px-1.5 py-1 rounded-full" />
+                        <CustomButton title="Accept" onClick={() => onAcceptRequest(req?._id || idx, "Accepted")} containerStyles="bg-[#FFEA00] text-xs text-white px-1.5 py-1 rounded-full" />
+                        <CustomButton title="Deny" onClick={() => onAcceptRequest(req?._id || idx, "Denied")} containerStyles="border border-[#666] text-xs text-ascent-1 px-1.5 py-1 rounded-full" />
                       </div>
                     </div>
                   ))
@@ -88,9 +150,9 @@ const MobileSidebar = ({
               </div>
               <div className="w-full flex flex-col gap-4 pt-4">
                 {suggestedFriends?.length ? (
-                  suggestedFriends.map((friend) => (
-                    <div key={friend?._id} className="flex items-center justify-between">
-                      <Link to={`/profile/${friend?._id}`} className="w-full flex gap-3 items-center">
+                  suggestedFriends.filter(Boolean).map((friend, idx) => (
+                    <div key={friend?._id || idx} className="flex items-center justify-between">
+                      <Link to={`/profile/${friend?._id || ""}`} className="w-full flex gap-3 items-center">
                         <img src={friend?.profileUrl ?? NoProfile} alt={friend?.firstName} className="w-10 h-10 object-cover rounded-full" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-ascent-1">{friend?.firstName} {friend?.lastName}</p>

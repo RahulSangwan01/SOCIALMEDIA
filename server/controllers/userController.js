@@ -387,6 +387,34 @@ export const acceptRequest = async (req, res, next) => {
   }
 };
 
+// Search Users
+export const searchUsers = async (req, res) => {
+  try {
+    const { userId } = req.body.user;
+    const { q } = req.body;
+    const term = (q || "").trim();
+    if (!term) {
+      return res.status(200).json({ success: true, users: [] });
+    }
+    const regex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const users = await Users.find({
+      _id: { $ne: userId },
+      $or: [
+        { firstName: regex },
+        { lastName: regex },
+        { email: regex },
+      ],
+    })
+      .select("firstName lastName profileUrl profession friends")
+      .limit(15);
+
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error searching users", success: false, error: error.message });
+  }
+};
+
 // Suggested Friends
 export const suggestedFriends = async (req, res) => {
   try {
@@ -484,4 +512,3 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
-

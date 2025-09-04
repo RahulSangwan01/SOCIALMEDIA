@@ -16,7 +16,7 @@ import { NoProfile } from "../assets";
 import { BsFiletypeGif, BsPersonFillAdd } from "react-icons/bs";
 import { BiImages, BiSolidVideo } from "react-icons/bi";
 import { useForm } from "react-hook-form";
-import { apiRequest, deletePost, fetchPosts, getUserInfo, handleFileUpload, likePost, sendFriendRequest } from "../utils"; 
+import { apiRequest, deletePost, fetchPosts, getUserInfo, handleFileUpload, likePost, sendFriendRequest, searchUsers } from "../utils"; 
 import { UserLogin } from "../redux/userSlice";
 
 
@@ -26,6 +26,10 @@ const Home = () => {
   const [friendRequest, setFriendRequest] = useState([]);
   const [suggestedFriends, setSuggestedFriends] = useState([]);
   const [errMsg, setErrMsg] = useState("");
+  const [userQ, setUserQ] = useState("");
+  const [userResults, setUserResults] = useState([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [sentUserIds, setSentUserIds] = useState([]);
   const [file, setFile] = useState(null);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -133,19 +137,29 @@ const Home = () => {
 
   const acceptFriendRequest = async(id, status) => {
     try{
-      const res = await apiRequest({
+      await apiRequest({
         url: "/users/accept-request",
         token: user?.token,
         method: "POST",
         data: { rid: id, status },
       });
-      setFriendRequest(res?.data);
+      await fetchFriendRequests();
     }
     catch(error){
       console.log(error);
     }
   };
-   
+
+  const handleUserSearch = async(value) => {
+    setUserQ(value);
+    if (!value || value.trim().length < 2) { setUserResults([]); return; }
+    try {
+      setSearchingUsers(true);
+      const users = await searchUsers(user?.token, value.trim());
+      setUserResults(users || []);
+    } finally { setSearchingUsers(false); }
+  };
+
   const getUser = async() => {
     const res = await getUserInfo(user?.token);
     const newData = { token: user?.token, ...res};
@@ -292,6 +306,67 @@ const Home = () => {
 
           {/* RIGJT */}
           <div className='hidden w-1/4 h-full lg:flex flex-col gap-8 overflow-y-auto'>
+            {/* SEARCH PEOPLE */}
+            <div className='w-full bg-primary shadow-sm rounded-lg px-6 py-5 relative'>
+              <div className='flex items-center justify-between text-lg text-ascent-1 pb-2 border-b border-[#66666645]'>
+                <span>Search People</span>
+              </div>
+              <div className='pt-3'>
+                <div className='flex gap-2 items-center'>
+                  <div className='relative flex-1'>
+                    <input
+                      value={userQ}
+                      onChange={(e)=>handleUserSearch(e.target.value)}
+                      placeholder='Search people...'
+                      className='w-full bg-secondary text-ascent-1 rounded-full pr-10 pl-4 py-2 text-sm outline-none'
+                    />
+                    {userQ ? (
+                      <button aria-label='Clear' onClick={()=>{ setUserQ(''); setUserResults([]); }} className='absolute right-2 top-1/2 -translate-y-1/2 text-ascent-2 hover:text-ascent-1'>×</button>
+                    ) : null}
+                  </div>
+                  <button className='px-4 py-2 rounded-full bg-[#FFEA00] text-white text-sm' onClick={()=>handleUserSearch(userQ)}>Search</button>
+                </div>
+
+                {userQ?.trim().length >= 2 && (
+                  <div className='absolute left-6 right-6 mt-2 z-20'>
+                    <div className='bg-primary border border-[#66666645] rounded-lg shadow-xl max-h-72 overflow-y-auto divide-y divide-[#66666645]'>
+                      {searchingUsers ? (
+                        <div className='px-3 py-2 text-xs text-ascent-2 flex items-center gap-2'>
+                          <svg className='animate-spin h-4 w-4 text-ascent-2' viewBox='0 0 24 24'><circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle><path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z'></path></svg>
+                          Searching...
+                        </div>
+                      ) : (userResults?.length ? (
+                        userResults.filter(Boolean).map((u, idx)=> (
+                          <div key={u?._id || idx} className='px-3 py-2 flex items-center gap-3'>
+                            <Link to={'/profile/' + (u?._id || '')} className='flex-1 flex items-center gap-3 min-w-0'>
+                              <img src={u?.profileUrl ?? NoProfile} alt={u?.firstName} className='w-9 h-9 object-cover rounded-full flex-shrink-0' />
+                              <div className='min-w-0'>
+                                <p className='text-sm font-medium text-ascent-1 truncate'>{u?.firstName} {u?.lastName}</p>
+                                <span className='text-xs text-ascent-2 truncate block'>{u?.profession ?? 'No Profession'}</span>
+                              </div>
+                            </Link>
+                            {sentUserIds.includes(u?._id) ? (
+                              <span className='text-xs text-ascent-2 px-2 py-1'>Sent</span>
+                            ) : (
+                              <button
+                                disabled={!u?._id}
+                                className='bg-[#FFEA00] text-xs text-white px-2 py-1 rounded flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed'
+                                onClick={async () => { if (!u?._id) return; await handleFriendRequest(u._id); setSentUserIds((ids)=> ids.includes(u._id) ? ids : [...ids, u._id]); }}
+                              >
+                                Add
+                              </button>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className='px-3 py-2 text-xs text-ascent-2'>No users found</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* FRIEND REQUEST */}
             <div className='w-full bg-primary shadow-sm rounded-lg px-6 py-5'>
               <div className='flex items-center justify-between text-xl text-ascent-1 pb-2 border-b border-[#66666645]'>
@@ -300,23 +375,23 @@ const Home = () => {
               </div>
 
               <div className='w-full flex flex-col gap-4 pt-4'>
-                {friendRequest?.map(({ _id, requestFrom: from }) => (
-                  <div key={_id} className='flex items-center justify-between'>
+                {friendRequest?.filter(Boolean).map((req, idx) => (
+                  <div key={req?._id || idx} className='flex items-center justify-between'>
                     <Link
-                      to={"/profile/" + from._id}
+                      to={"/profile/" + (req?.requestFrom?._id || "")}
                       className='w-full flex gap-4 items-center cursor-pointer'
                     >
                       <img
-                        src={from?.profileUrl ?? NoProfile}
-                        alt={from?.firstName}
+                        src={req?.requestFrom?.profileUrl ?? NoProfile}
+                        alt={req?.requestFrom?.firstName}
                         className='w-10 h-10 object-cover rounded-full'
                       />
                       <div className='flex-1'>
                         <p className='text-base font-medium text-ascent-1'>
-                          {from?.firstName} {from?.lastName}
+                          {req?.requestFrom?.firstName} {req?.requestFrom?.lastName}
                         </p>
                         <span className='text-sm text-ascent-2'>
-                          {from?.profession ?? "No Profession"}
+                          {req?.requestFrom?.profession ?? "No Profession"}
                         </span>
                       </div>
                     </Link>
@@ -324,12 +399,12 @@ const Home = () => {
                     <div className='flex gap-1'>
                       <CustomButton
                         title='Accept'
-                        onClick={() => acceptFriendRequest(_id, "Accepted")}
+                        onClick={() => acceptFriendRequest(req?._id || idx, "Accepted")}
                         containerStyles='bg-[#FFEA00] text-xs text-white px-1.5 py-1 rounded-full'
                       />
                       <CustomButton
                         title='Deny'
-                        onClick={() => acceptFriendRequest(_id, "Denied")}
+                        onClick={() => acceptFriendRequest(req?._id || idx, "Denied")}
                         containerStyles='border border-[#666] text-xs text-ascent-1 px-1.5 py-1 rounded-full'
                       />
                     </div>
@@ -344,14 +419,13 @@ const Home = () => {
                 <span>Friend Suggestion</span>
               </div>
               <div className='w-full flex flex-col gap-4 pt-4'>
-                {suggestedFriends?.map((friend) => (
+                {suggestedFriends?.filter(Boolean).map((friend, idx) => (
                   <div
                     className='flex items-center justify-between'
-                    key={friend._id}
+                    key={friend?._id || idx}
                   >
                     <Link
-                      to={"/profile/" + friend?._id}
-                      key={friend?._id}
+                      to={"/profile/" + (friend?._id || "")}
                       className='w-full flex gap-4 items-center cursor-pointer'
                     >
                       <img

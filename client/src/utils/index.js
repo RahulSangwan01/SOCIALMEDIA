@@ -2,11 +2,15 @@ import axios from "axios";
 import { SetPosts } from "../redux/postSlice";
 
 
-// const API_URL = "http://localhost:8800";
-const API_URL = "https://dosticonnect.onrender.com";
+const getBaseURL = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  const isLocal = typeof window !== "undefined" && window.location.hostname === "localhost";
+  if (isLocal && envUrl) return envUrl;
+  return ""; // same-origin; CRA dev proxy forwards to backend
+};
 
 export const API = axios.create({
-  baseURL: API_URL,
+  baseURL: getBaseURL(),
   responseType: "json",
 });
 
@@ -135,14 +139,21 @@ export const viewUserProfile = async (token, id) => {
 
     return;
   } catch (error) {
-    console.log(error); 
+    console.log(error);
   }
 };
 
-
-
-
-
-
-
-
+export const searchUsers = async (token, q) => {
+  try {
+    const res = await apiRequest({
+      url: "/users/search-users",
+      token,
+      method: "POST",
+      data: { q },
+    });
+    return res?.users || [];
+  } catch (e) {
+    console.log(e);
+    return [];
+  }
+};
