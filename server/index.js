@@ -24,11 +24,15 @@ const PORT = process.env.PORT || 8800;
 dbConnection();
 
 app.use(helmet());
-app.use(cors({
-  origin: [process.env.CLIENT_URL, "http://localhost:3000"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL
+      ? [process.env.CLIENT_URL, "http://localhost:3000"]
+      : ["http://localhost:3000"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  })
+);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
