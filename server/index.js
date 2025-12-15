@@ -40,9 +40,9 @@
 // app.use(express.urlencoded({ extended: true }));
 
 // app.use(morgan("dev"));
-// app.get("/health", (req, res) => {
-//   res.status(200).send("OK");
-// });
+  // app.get("/health", (req, res) => {
+  //   res.status(200).send("OK");
+  // });
 // app.use(router);
 
 // //error middleware
@@ -107,6 +107,9 @@ app.use(express.static(path.join(__dirname, "views/build")));
 
 //error middleware
 app.use(errorMiddleware);
+  app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+  });
 
 app.listen(PORT, () => {
   console.log(`Server running on port: ${PORT}`);
