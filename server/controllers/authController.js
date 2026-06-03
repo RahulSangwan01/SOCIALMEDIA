@@ -32,7 +32,7 @@ export const register = async (req, res, next) => {
     await sendVerificationEmail(user, res);
   } catch (error) {
     console.log("Register Error:", error);
-    res.status(500).json({ message: "An error occurred during registration." });
+    res.status(500).json({ status: "failed", message: "An error occurred during registration." });
   }
 };
 
@@ -84,6 +84,6 @@ export const login = async (req, res, next) => {
     });
   } catch (error) {
     console.log("Login Error:", error);
-    res.status(500).json({ message: "An error occurred during login." });
+    res.status(500).json({ status: "failed", message: "An error occurred during login." });
   }
 };

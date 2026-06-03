@@ -29,8 +29,8 @@ export const apiRequest = async ({ url, token, data, method }) => {
   } catch (error) {
     const errData = error?.response?.data;
     console.log(error);
-    if (errData) return { status: errData.success ?? false, message: errData.message ?? "Request failed" };
-    return { status: false, message: error?.message || "Network error" };
+    if (errData) return { status: "failed", message: errData.message ?? "Request failed" };
+    return { status: "failed", message: error?.message || "Network error" };
   }
 };
 

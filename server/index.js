@@ -105,11 +105,13 @@ app.use(router);
 // Static files served AFTER API routes
 app.use(express.static(path.join(__dirname, "views/build")));
 
+// Health check route
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 //error middleware
 app.use(errorMiddleware);
-  app.get("/health", (req, res) => {
-    res.status(200).send("OK");
-  });
 
 app.listen(PORT, () => {
   console.log(`Server running on port: ${PORT}`);
