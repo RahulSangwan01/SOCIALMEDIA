@@ -28,11 +28,17 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ],
+  "rules": {
+    "no-unused-vars": "warn",
+    "eqeqeq": "warn",
+    "jsx-a11y/img-redundant-alt": "warn",
+    "react-hooks/exhaustive-deps": "warn"
+  }
+},
   "browserslist": {
     "production": [
       ">0.2%",

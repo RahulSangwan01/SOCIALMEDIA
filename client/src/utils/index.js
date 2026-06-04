@@ -2,16 +2,21 @@ import axios from "axios";
 import { SetPosts } from "../redux/postSlice";
 
 
-const getBaseURL = () => {
-  const envUrl = process.env.REACT_APP_API_URL;
-  if (envUrl) return envUrl.replace(/\/$/, ""); // prefer explicit API URL in all environments
-  const isLocal = typeof window !== "undefined" && window.location.hostname === "localhost";
-  // In local dev rely on CRA proxy; in prod require REACT_APP_API_URL
-  return isLocal ? "" : "";
-};
+// const getBaseURL = () => {
+//   const envUrl = process.env.REACT_APP_API_URL;
+//   if (envUrl) return envUrl.replace(/\/$/, ""); // prefer explicit API URL in all environments
+//   const isLocal = typeof window !== "undefined" && window.location.hostname === "localhost";
+//   // In local dev rely on CRA proxy; in prod require REACT_APP_API_URL
+//   return isLocal ? "" : "";
+// };
+
+// export const API = axios.create({
+//   baseURL: getBaseURL(),
+//   responseType: "json",
+// });
 
 export const API = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8800",
   responseType: "json",
 });
 

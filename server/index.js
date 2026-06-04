@@ -54,15 +54,12 @@
 
 
 
-
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import path from "path";
-
-//securty packges
 import helmet from "helmet";
 import dbConnection from "./dbConfig/index.js";
 import errorMiddleware from "./middleware/errorMiddleware.js";
@@ -77,42 +74,55 @@ const app = express();
 const PORT = process.env.SERVER_PORT || process.env.PORT || 8800;
 
 const resolveOrigins = () => {
-  if (process.env.CORS_ORIGIN) return process.env.CORS_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean);
+  if (process.env.CORS_ORIGIN)
+    return process.env.CORS_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean);
   if (process.env.CLIENT_URL) return [process.env.CLIENT_URL];
   return ["http://localhost:3000"];
+};
+
+const corsOptions = {
+  origin: resolveOrigins(),
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 // DB
 dbConnection();
 
-// Middlewares
+// 1. CORS must be first — before helmet and everything else
+app.use(cors(corsOptions));
+
+// 2. Handle preflight requests for all routes explicitly
+app.options("*", cors(corsOptions));
+
+// 3. Helmet after cors
 app.use(helmet());
-app.use(
-  cors({
-    origin: resolveOrigins(),
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  })
-);
+
+// 4. Body parsers
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// 5. Logger
 app.use(morgan("dev"));
+
+// 6. Routes
 app.use(router);
 
-// Static files served AFTER API routes
+// 7. Static files
 app.use(express.static(path.join(__dirname, "views/build")));
 
-// Health check route
+// 8. Health check
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
-//error middleware
+// 9. Error middleware last
 app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Server running on port: ${PORT}`);
+  console.log(`Allowed origins: ${resolveOrigins().join(", ")}`);
 });
