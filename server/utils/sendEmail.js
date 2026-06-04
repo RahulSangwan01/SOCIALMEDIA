@@ -70,19 +70,19 @@ export const sendVerificationEmail = async (user, res) => {
         .sendMail(mailOptions)
         .then(() => {
           res.status(201).send({
-            success: "PENDING",
+            status: "PENDING",
             message:
               "Verification email has been sent to your account. Check your email for further instructions.",
           });
         })
         .catch((err) => {
           console.log(err);
-          res.status(404).json({ message: "Something went wrong" });
+          res.status(404).json({ status: "failed", message: "Something went wrong" });
         });
     }
   } catch (error) {
     console.log(error);
-    res.status(404).json({ message: "Something went wrong" });
+    res.status(404).json({ status: "failed", message: "Something went wrong" });
   }
 };
 
@@ -121,18 +121,18 @@ export const resetPasswordLink = async (user, res) => {
         .sendMail(mailOptions)
         .then(() => {
           res.status(201).send({
-            success: "PENDING",
+            status: "PENDING",
             message: "Reset Password Link has been sent to your account.",
           });
         })
         .catch((err) => {
           console.log(err);
-          res.status(404).json({ message: "Something went wrong" });
+          res.status(404).json({ status: "failed", message: "Something went wrong" });
         });
     }
   } catch (error) {
     console.log(error);
-    res.status(404).json({ message: "Something went wrong" });
+    res.status(404).json({ status: "failed", message: "Something went wrong" });
   }
 };
 

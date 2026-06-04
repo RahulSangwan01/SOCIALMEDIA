@@ -70,7 +70,7 @@ const Login = () => {
           <span className="text-sm mt-2 text-ascent-2">Welcome back</span>
 
           <form
-            className="py-8 flex flex-col gap-5="
+            className="py-8 flex flex-col gap-5"
             onSubmit={handleSubmit(onSubmit)}
           >
             <TextInput
@@ -166,7 +166,7 @@ const Login = () => {
 
           <div className="mt-16 text-center">
             <p className="text-white text-base">
-              Connect with friedns & have share for fun
+              Connect with friends & have share for fun
             </p>
             <span className="text-sm text-white/80">
               Share memories with friends and the world.

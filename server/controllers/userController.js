@@ -70,7 +70,7 @@ export const verifyEmail = async (req, res) => {
       res.redirect(`/users/verified?status=error&message=${message}`);
     }
   } catch (error) {
-    console.log(err);
+    console.log(error);
     res.redirect(`/users/verified?message=`);
   }
 };
@@ -84,7 +84,7 @@ export const requestPasswordReset = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        status: "FAILED",
+        status: "failed",
         message: "Email address not found.",
       });
     }
@@ -102,7 +102,7 @@ export const requestPasswordReset = async (req, res) => {
     await resetPasswordLink(user, res);
   } catch (error) {
     console.log(error);
-    res.status(404).json({ message: error.message });
+    res.status(404).json({ status: "failed", message: error.message });
   }
 };
 
@@ -213,7 +213,7 @@ export const updateUser = async (req, res, next) => {
   try {
     const { firstName, lastName, location, profileUrl, profession } = req.body;
 
-    if (!(firstName || lastName || contact || profession || location)) {
+    if (!(firstName || lastName || profession || location)) {
       next("Please provide all required fields");
       return;
     }
