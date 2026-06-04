@@ -182,7 +182,7 @@ export const getUser = async (req, res) => {
 
     const user = await Users.findById(id ?? userId).populate({
       path: "friends",
-      select: "-password",
+      select: "firstName lastName location profileUrl profession",
     });
 
     if (!user) {
@@ -232,7 +232,7 @@ export const updateUser = async (req, res, next) => {
       new: true,
     });
 
-    await user.populate({ path: "friends", select: "-password" });
+    await user.populate({ path: "friends", select: "firstName lastName location profileUrl profession" });
     const token = createJWT(user?._id);
 
     user.password = undefined;
@@ -306,7 +306,7 @@ export const getFriendRequest = async (req, res) => {
     })
       .populate({
         path: "requestFrom",
-        select: "firstName lastName profileUrl profession -password",
+        select: "firstName lastName profileUrl profession",
       })
       .limit(10)
       .sort({

@@ -15,24 +15,26 @@ import {
 
 const router = express.Router();
 
-// crete post
+// create post
 router.post("/create-post", userAuth, createPost);
+
 // get posts
 router.post("/", userAuth, getPosts);
-router.post("/:id", userAuth, getPost);
 
+// specific routes BEFORE /:id
 router.post("/get-user-post/:id", userAuth, getUserPost);
-
-// get comments
-router.get("/comments/:postId", getComments);
-
-//like and comment on posts
 router.post("/like/:id", userAuth, likePost);
 router.post("/like-comment/:id/:rid?", userAuth, likePostComment);
 router.post("/comment/:id", userAuth, commentPost);
 router.post("/reply-comment/:id", userAuth, replyPostComment);
 
-//delete post
+// get comments
+router.get("/comments/:postId", getComments);
+
+// delete post
 router.delete("/:id", userAuth, deletePost);
+
+// generic /:id MUST be last
+router.post("/:id", userAuth, getPost);
 
 export default router;
