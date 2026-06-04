@@ -49,7 +49,7 @@ export const login = async (req, res, next) => {
     // Find user by email
     const user = await Users.findOne({ email }).select("+password").populate({
       path: "friends",
-      select: "firstName lastName location profileUrl -password",
+      select: "firstName lastName location profileUrl",  // removed -password
     });
 
     if (!user) {
@@ -76,7 +76,7 @@ export const login = async (req, res, next) => {
 
     const token = createJWT(user._id);
 
-    res.status(201).json({
+    res.status(200).json({  // changed 201 to 200 - login is not creating a resource
       success: true,
       message: "Login successfully",
       user,
